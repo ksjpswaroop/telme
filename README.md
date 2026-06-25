@@ -15,6 +15,17 @@ See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 - 👉 **[USER_GUIDE.md](./USER_GUIDE.md)** — install, first-run setup, daily use, troubleshooting on macOS
 - 📦 [Download Telme](https://github.com/ksjpswaroop/telme/releases) (latest release DMG)
 
+## For builders & investors
+
+📈 **[b2b/](./b2b/00-README.md)** — strategic plan for evolving Telme into a multi-tenant SaaS
+
+- Market research: problem landscape, competitive teardown, 5 ranked ICPs
+- Services: 20+ connector candidates (SharePoint, Drive, Notion, Confluence, Slack, GitHub, etc.) with tier priorities and universal connector architecture
+- Architecture: cloud backend, 5-layer tenant isolation, encryption + BYOK, compliance posture
+- Commercial: 5-tier pricing ladder ($0 / $20 / $8/u/mo / $15/u/mo / $25+), GTM phases, funding scenarios, 10-slide pitch deck outline
+
+**TL;DR:** keep shipping Telme v1 for individuals; if/when team demand emerges, build cloud v2 around SharePoint + Drive + Notion first ($2-5M seed to $1M+ ARR in 24 months).
+
 
 ## Docs
 
