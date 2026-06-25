@@ -48,6 +48,40 @@ The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, regi
 
 ---
 
+## [0.5.0] — 2026-06-25
+
+### Release artifacts (macOS)
+
+- Beautiful custom logo: rounded navy square + magnifying glass + AI sparkle
+- Regenerated all platform icons (`cargo tauri icon`) — 1024, 512, 256, 128, 64, 32 + macOS `.icns`, Windows `.ico`, all iOS/Android/Linux store sizes
+- Beautiful DMG with hand-designed background image, positioned Telme.app icon, Applications symlink, volume icon
+- Release `.app` bundle (7.21 MB) at `src-tauri/target/release/bundle/macos/Telme.app`
+- Release `.dmg` (3.92 MB, 46% compression, CRC32 valid) at `src-tauri/target/release/bundle/dmg/Telme_0.1.0_aarch64.dmg`
+- `BUILD_AND_RELEASE.md` documents the build pipeline + code-signing path
+
+### Brand
+
+- Color: navy gradient `#0F172A → #1E293B`, accent `#FCD34D`
+- All assets live under `src-tauri/icons/`
+
+### Verified
+
+```
+✓ cargo tauri build → .app + .dmg produced cleanly
+✓ hdiutil verify DMG → checksum VALID
+✓ hdiutil attach DMG → mounts cleanly at /tmp/mnt
+✓ ls /tmp/mnt → .DS_Store, .VolumeIcon.icns, .background/, Telme.app/
+✓ Launching Telme.app/Contents/MacOS/telme → PID 46832 ran cleanly
+✓ Logo regenerated all required Tauri sizes
+```
+
+### Pending
+
+- Code signing (requires Apple Developer ID) — see `BUILD_AND_RELEASE.md`
+- Notarization
+
+---
+
 ## [0.4.0] — 2026-06-25
 
 ### Phase 4 — Search (Sprint 5) ✅
