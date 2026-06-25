@@ -6,7 +6,7 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Status
 
-✅ **Phase 1 — Scaffolding complete.** The Tauri 2 + React 19 + Rust app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 2 next.
+🔄 **Phase 2 — Indexing (Sprint 2 of 2 complete).** The Rust backend persists folders, walks directories, extracts text/code, chunks, and stores in SQLite with FTS5. Frontend can add folders via native picker. Next: FS watcher + onboarding (Sprint 3), then embeddings (Phase 3).
 
 See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 
