@@ -6,7 +6,7 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Status
 
-🔄 **Phase 3 — Embeddings complete.** Ollama HTTP client + hybrid semantic+BM25 search pipeline. Phase 4 (Search UX) next.
+🔄 **Phase 4 — Search (Sprint 5 of 2 complete).** End-to-end search UX wired: debounced backend search, keyboard nav, file-open, reveal-in-Finder. Sprint 6 polish + Phase 5 (Settings) next.
 
 See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 

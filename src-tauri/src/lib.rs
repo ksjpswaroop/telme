@@ -23,6 +23,8 @@ mod schema;
 mod search;
 mod walker;
 
+use tauri_plugin_opener::OpenerExt;
+
 use embedder::OllamaEmbedder;
 pub use error::{AppError, AppResult, TelmeError};
 
@@ -155,6 +157,23 @@ async fn reindex_with_embeddings(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+async fn open_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    app.opener()
+        .open_path(path, None::<&str>)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn reveal_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    use std::path::PathBuf;
+    let p = PathBuf::from(&path);
+    let parent = p.parent().unwrap_or(&p);
+    app.opener()
+        .open_path(parent.to_string_lossy().into_owned(), None::<&str>)
+        .map_err(|e| e.to_string())
+}
+
 // ---------- App entry ----------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -201,6 +220,8 @@ pub fn run() {
             get_search_status,
             search,
             reindex_with_embeddings,
+            open_file,
+            reveal_file,
         ])
         .setup(move |app| {
             // ---- Phase 1: hotkey + window ----

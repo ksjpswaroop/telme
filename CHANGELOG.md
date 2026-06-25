@@ -48,6 +48,58 @@ The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, regi
 
 ---
 
+## [0.4.0] — 2026-06-25
+
+### Phase 4 — Search (Sprint 5) ✅
+
+End-to-end search UX wires the Phase 3 hybrid pipeline to keyboard nav and file-open. Users can now type a query, see ranked results, and open or reveal files.
+
+### Added
+
+**Tauri commands**
+- `open_file(path)` — opens file in OS default app via `tauri-plugin-opener`
+- `reveal_file(path)` — opens parent directory in Finder/Explorer
+
+**Capabilities**
+- `opener:default`, `opener:allow-open-path` added to `default.json`
+
+**Frontend (`src/App.tsx`)**
+- Keyboard wiring: `Enter` → `open_file`, `Cmd/Ctrl+Enter` → `reveal_file`
+- Stale-request cancellation: each debounced search has its own `cancelled` flag
+
+### Verified
+
+```
+✓ cargo test --lib                  24 passed; 0 failed (4 in search::tests)
+✓ cargo check                       0 errors
+✓ pnpm tauri build --no-bundle      exits 0
+✓ Binary launches, registers ⌘⇧Space, schema v2, config loaded
+```
+
+### Stories shipped (16/26 Phase 4 points)
+
+| Story | Title | Points | Status |
+|---|---|---|---|
+| US-401 | Query pipeline end-to-end | 8 | ✅ |
+| US-402 | Streaming result UI | 5 | ✅ |
+| US-403 | Result item UI matches design | 3 | ✅ |
+| US-404 | Keyboard navigation in results | 3 | 🔄 Sprint 5 done; Sprint 6 a11y polish |
+| US-405 | Open file in default app | 2 | ✅ |
+| US-406 | Snippet quality improvements | 3 | ⬜ Sprint 6 |
+| US-407 | Search feedback & empty states | 2 | 🔄 Sprint 5 partial |
+
+### Tally
+
+**77/135 v1 points (57%)** across Phase 1 (14/14) + Phase 2 Sprint 2 (28/34) + Phase 3 (19/19) + Phase 4 Sprint 5 (16/26).
+
+### Sprint 6 deferred
+
+- US-404 a11y polish (Cmd+K refocus, ARIA live region, focus ring)
+- US-406 richer snippet highlighting + multi-line snippets
+- US-407 degraded banner UI + loading skeletons
+
+---
+
 ## [0.3.0] — 2026-06-25
 
 ### Phase 3 — Embeddings (Sprint 4) ✅

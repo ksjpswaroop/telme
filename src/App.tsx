@@ -231,7 +231,17 @@ export default function App() {
       if (e.key === "Enter" && results.length > 0) {
         e.preventDefault();
         const r = results[selectedIndex];
-        console.log("Phase 2 placeholder: open file", r.path);
+        if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl+Enter: reveal in Finder/Explorer
+          invoke("reveal_file", { path: r.path }).catch((err) =>
+            console.error("reveal_file failed:", err)
+          );
+        } else {
+          // Enter: open file in default app
+          invoke("open_file", { path: r.path }).catch((err) =>
+            console.error("open_file failed:", err)
+          );
+        }
       }
     };
     input.addEventListener("keydown", handler);
