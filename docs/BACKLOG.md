@@ -16,7 +16,7 @@
 
 ---
 
-## Phase 0 — Scaffolding (Sprint 1) ✅ COMPLETE
+## Phase 1 — Scaffolding (Sprint 1) ✅ COMPLETE
 
 > **Goal:** Tauri app boots on macOS, title bar UI renders, hotkey works, no index yet.
 >
@@ -120,15 +120,15 @@
 
 ---
 
-**Phase 0 total:** 14/14pt complete ✅
+**Phase 1 total:** 14/14pt complete ✅
 
 ---
 
-## Phase 1 — Indexing (Sprints 2–3)
+## Phase 2 — Indexing (Sprints 2–3)
 
 > **Goal:** File walker + watcher + SQLite store + text extraction. No embeddings yet — text-only.
 
-### US-101 ⬜ P0 — Add a folder to index [5pt]
+### US-201 ⬜ P0 — Add a folder to index [5pt]
 
 **As a** user  
 **I want to** choose one or more folders to index  
@@ -143,7 +143,7 @@
 
 ---
 
-### US-102 ⬜ P0 — Walk indexed folders and extract text [8pt]
+### US-202 ⬜ P0 — Walk indexed folders and extract text [8pt]
 
 **As a** system  
 **I need** to traverse indexed folders and extract text from each file  
@@ -160,7 +160,7 @@
 
 ---
 
-### US-103 ⬜ P0 — Chunk text into 512-token overlapping segments [3pt]
+### US-203 ⬜ P0 — Chunk text into 512-token overlapping segments [3pt]
 
 **As a** system  
 **I need** to split text into overlapping chunks  
@@ -175,7 +175,7 @@
 
 ---
 
-### US-104 ⬜ P0 — SQLite schema migration on startup [3pt]
+### US-204 ⬜ P0 — SQLite schema migration on startup [3pt]
 
 **As a** system  
 **I need** a versioned SQLite schema  
@@ -190,7 +190,7 @@
 
 ---
 
-### US-105 ⬜ P0 — Watch filesystem for changes [5pt]
+### US-205 ⬜ P0 — Watch filesystem for changes [5pt]
 
 **As a** system  
 **I need** to detect file additions, modifications, deletions in real time  
@@ -206,7 +206,7 @@
 
 ---
 
-### US-106 ⬜ P0 — First-run onboarding flow [5pt]
+### US-206 ⬜ P0 — First-run onboarding flow [5pt]
 
 **As a** first-time user  
 **I want** a guided setup  
@@ -222,7 +222,7 @@
 
 ---
 
-### US-107 ⬜ P1 — Folder list in Settings [3pt]
+### US-207 ⬜ P1 — Folder list in Settings [3pt]
 
 **As a** user  
 **I want** to see and manage my indexed folders  
@@ -237,7 +237,7 @@
 
 ---
 
-### US-108 ⬜ P1 — Index stats surface [2pt]
+### US-208 ⬜ P1 — Index stats surface [2pt]
 
 **As a** user  
 **I want** to see how big my index is  
@@ -251,15 +251,15 @@
 
 ---
 
-**Phase 1 total:** 34pt (Sprints 2–3 capacity: 30–36pt ✓)
+**Phase 2 total:** 34pt (Sprints 2–3 capacity: 30–36pt ✓)
 
 ---
 
-## Phase 2 — Embeddings (Sprint 4)
+## Phase 3 — Embeddings (Sprint 4)
 
 > **Goal:** Ollama integration + vector storage + model fallback.
 
-### US-201 ⬜ P0 — Ollama integration via HTTP [5pt]
+### US-301 ⬜ P0 — Ollama integration via HTTP [5pt]
 
 **As a** system  
 **I need** to call Ollama's `/api/embeddings` endpoint  
@@ -275,7 +275,7 @@
 
 ---
 
-### US-202 ⬜ P0 — nomic-embed-text default model [3pt]
+### US-302 ⬜ P0 — nomic-embed-text default model [3pt]
 
 **As a** system  
 **I want** nomic-embed-text as the default embedding model  
@@ -290,7 +290,7 @@
 
 ---
 
-### US-203 ⬜ P0 — Vector storage via sqlite-vec [5pt]
+### US-303 ⬜ P0 — Vector storage via sqlite-vec [5pt]
 
 **As a** system  
 **I need** to store and query vector embeddings  
@@ -305,7 +305,7 @@
 
 ---
 
-### US-204 ⬜ P0 — Fallback to BM25-only if Ollama down [3pt]
+### US-304 ⬜ P0 — Fallback to BM25-only if Ollama down [3pt]
 
 **As a** user  
 **I want** search to still work when Ollama is unreachable  
@@ -320,7 +320,7 @@
 
 ---
 
-### US-205 ⬜ P1 — Embedding model picker [3pt]
+### US-305 ⬜ P1 — Embedding model picker [3pt]
 
 **As a** user  
 **I want to** choose between embedding models  
@@ -335,15 +335,15 @@
 
 ---
 
-**Phase 2 total:** 19pt (Sprint 4 capacity: 15–18pt — slightly over, defer US-205 to Sprint 5)
+**Phase 3 total:** 19pt (Sprint 4 capacity: 15–18pt — slightly over, defer US-305 to Sprint 5)
 
 ---
 
-## Phase 3 — Search (Sprints 5–6)
+## Phase 4 — Search (Sprints 5–6)
 
 > **Goal:** Query pipeline, hybrid ranking, result UI, end-to-end working search.
 
-### US-301 ⬜ P0 — Query pipeline end-to-end [8pt]
+### US-401 ⬜ P0 — Query pipeline end-to-end [8pt]
 
 **As a** user  
 **I want** to type a query and get ranked results  
@@ -360,7 +360,7 @@
 
 ---
 
-### US-302 ⬜ P0 — Streaming result UI [5pt]
+### US-402 ⬜ P0 — Streaming result UI [5pt]
 
 **As a** user  
 **I want** to see results appear as I type  
@@ -376,7 +376,7 @@
 
 ---
 
-### US-303 ⬜ P0 — Result item UI matches design [3pt]
+### US-403 ⬜ P0 — Result item UI matches design [3pt]
 
 **As a** user  
 **I want** each result to show filename, path, snippet, and match quality  
@@ -393,7 +393,7 @@
 
 ---
 
-### US-304 ⬜ P0 — Keyboard navigation in results [3pt]
+### US-404 ⬜ P0 — Keyboard navigation in results [3pt]
 
 **As a** user  
 **I want** to navigate results with arrow keys  
@@ -411,7 +411,7 @@
 
 ---
 
-### US-305 ⬜ P0 — Open file in default app [2pt]
+### US-405 ⬜ P0 — Open file in default app [2pt]
 
 **As a** user  
 **I want** clicking a result to open the file  
@@ -426,7 +426,7 @@
 
 ---
 
-### US-306 ⬜ P1 — Snippet quality improvements [3pt]
+### US-406 ⬜ P1 — Snippet quality improvements [3pt]
 
 **As a** user  
 **I want** snippets to show relevant context  
@@ -441,7 +441,7 @@
 
 ---
 
-### US-307 ⬜ P1 — Search feedback & empty states [2pt]
+### US-407 ⬜ P1 — Search feedback & empty states [2pt]
 
 **As a** user  
 **I want** clear feedback when search has no results or errors  
@@ -456,15 +456,15 @@
 
 ---
 
-**Phase 3 total:** 26pt (Sprints 5–6 capacity: 30–36pt ✓)
+**Phase 4 total:** 26pt (Sprints 5–6 capacity: 30–36pt ✓)
 
 ---
 
-## Phase 4 — Polish (Sprint 7)
+## Phase 5 — Polish (Sprint 7)
 
 > **Goal:** Settings complete, installer, first-run UX, telemetry-free privacy guarantees.
 
-### US-401 ⬜ P0 — Settings window complete [5pt]
+### US-501 ⬜ P0 — Settings window complete [5pt]
 
 **As a** user  
 **I want** a settings window with all preferences  
@@ -472,10 +472,10 @@
 
 **Acceptance criteria:**
 - All sections from wireframe #9 implemented
-- Folder management (US-107)
-- Model picker (US-205)
+- Folder management (US-207)
+- Model picker (US-305)
 - Search sliders (semantic weight, results count)
-- Hotkey recorder (US-403)
+- Hotkey recorder (US-503)
 - Privacy toggle (clear history on quit)
 - Index stats + Rebuild / Clear buttons
 - About section with version + GitHub link
@@ -483,7 +483,7 @@
 
 ---
 
-### US-402 ⬜ P0 — Tray icon + menu [3pt]
+### US-502 ⬜ P0 — Tray icon + menu [3pt]
 
 **As a** user  
 **I want** quick access from the menu bar  
@@ -499,7 +499,7 @@
 
 ---
 
-### US-403 ⬜ P0 — Customizable hotkey [3pt]
+### US-503 ⬜ P0 — Customizable hotkey [3pt]
 
 **As a** user  
 **I want to** change the global hotkey  
@@ -516,7 +516,7 @@
 
 ---
 
-### US-404 ⬜ P0 — Installer + auto-update scaffold [5pt]
+### US-504 ⬜ P0 — Installer + auto-update scaffold [5pt]
 
 **As a** developer  
 **I want** signed installers on macOS and Windows  
@@ -532,7 +532,7 @@
 
 ---
 
-### US-405 ⬜ P1 — Index management actions [3pt]
+### US-505 ⬜ P1 — Index management actions [3pt]
 
 **As a** user  
 **I want to** rebuild or clear my index  
@@ -547,7 +547,7 @@
 
 ---
 
-### US-406 ⬜ P1 — Privacy guarantees messaging [2pt]
+### US-506 ⬜ P1 — Privacy guarantees messaging [2pt]
 
 **As a** privacy-conscious user  
 **I want to** see proof that nothing leaves my machine  
@@ -562,7 +562,7 @@
 
 ---
 
-### US-407 ⬜ P2 — First-run detection & re-onboarding [2pt]
+### US-507 ⬜ P2 — First-run detection & re-onboarding [2pt]
 
 **As a** user  
 **I want** to be re-prompted if I clear my data  
@@ -575,15 +575,15 @@
 
 ---
 
-**Phase 4 total:** 23pt (Sprint 7 capacity: 15–18pt — defer US-407 to Phase 5)
+**Phase 5 total:** 23pt (Sprint 7 capacity: 15–18pt — defer US-507 to Phase 5)
 
 ---
 
-## Phase 5 — Windows & launch prep (Sprint 8)
+## Phase 6 — Windows & launch prep (Sprint 8)
 
 > **Goal:** Verify on Windows 11, fix platform quirks, polish for first release.
 
-### US-501 ⬜ P0 — Windows 11 verification [8pt]
+### US-601 ⬜ P0 — Windows 11 verification [8pt]
 
 **As a** Windows user  
 **I want** Telme to work natively on Windows  
@@ -600,7 +600,7 @@
 
 ---
 
-### US-502 ⬜ P0 — Cross-platform testing pass [5pt]
+### US-602 ⬜ P0 — Cross-platform testing pass [5pt]
 
 **As a** developer  
 **I want** both platforms covered by automated tests  
@@ -615,7 +615,7 @@
 
 ---
 
-### US-503 ⬜ P0 — Launch README + docs [3pt]
+### US-603 ⬜ P0 — Launch README + docs [3pt]
 
 **As a** new contributor  
 **I want** clear setup instructions  
@@ -630,7 +630,7 @@
 
 ---
 
-### US-504 ⬜ P1 — Public release prep [3pt]
+### US-604 ⬜ P1 — Public release prep [3pt]
 
 **As a** user  
 **I want to** find and download Telme easily  
@@ -645,7 +645,7 @@
 
 ---
 
-**Phase 5 total:** 19pt (Sprint 8 capacity: 15–18pt — slight overrun, US-504 may slip to post-launch)
+**Phase 6 total:** 19pt (Sprint 8 capacity: 15–18pt — slight overrun, US-604 may slip to post-launch)
 
 ---
 
@@ -653,12 +653,12 @@
 
 | Phase | Sprints | Stories | Points | Status |
 |---|---|---|---|---|
-| 0 — Scaffold | 1 | 5 | 14 | ✅ Complete |
-| 1 — Indexing | 2–3 | 8 | 34 | ⬜ Not started |
-| 2 — Embeddings | 4 | 5 | 19 | ⬜ Not started |
-| 3 — Search | 5–6 | 7 | 26 | ⬜ Not started |
-| 4 — Polish | 7 | 7 | 23 | ⬜ Not started |
-| 5 — Windows + launch | 8 | 4 | 19 | ⬜ Not started |
+| 1 — Scaffold | 1 | 5 | 14 | ✅ Complete |
+| 2 — Indexing | 2–3 | 8 | 34 | ⬜ Not started |
+| 3 — Embeddings | 4 | 5 | 19 | ⬜ Not started |
+| 4 — Search | 5–6 | 7 | 26 | ⬜ Not started |
+| 5 — Polish | 7 | 7 | 23 | ⬜ Not started |
+| 6 — Windows + launch | 8 | 4 | 19 | ⬜ Not started |
 | **Total v1** | **8 sprints** | **36 stories** | **135pt** | **14pt done (10%)** |
 
 ---

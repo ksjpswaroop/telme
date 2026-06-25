@@ -6,9 +6,9 @@ All notable changes to Telme are tracked here. Format follows [Keep a Changelog]
 
 ## [0.1.0] — 2026-06-25
 
-### Phase 0 — Scaffolding ✅
+### Phase 1 — Scaffolding ✅
 
-The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 1.
+The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 2 next.
 
 ### Added
 
@@ -44,19 +44,19 @@ The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, regi
 | US-004 | Search input has correct UX | 2 |
 | US-005 | Tauri 2 starter scaffold | 5 |
 
-**Phase 0: 14/14 points ✅**
+### Phase 1 total: 14/14 points ✅
 
 ---
 
 ## [Unreleased]
 
-### Phase 1 — Indexing (Sprints 2–3, planned)
+### Phase 2 — Indexing (Sprints 2–3, planned)
 
-- US-101 — Add a folder to index
-- US-102 — Walk indexed folders and extract text
-- US-103 — Chunk text into 512-token overlapping segments
-- US-104 — SQLite schema migration on startup
-- US-105 — Watch filesystem for changes
-- US-106 — First-run onboarding flow
-- US-107 — Folder list in Settings
-- US-108 — Index stats surface
+- US-201 — Add a folder to index
+- US-202 — Walk indexed folders and extract text
+- US-203 — Chunk text into 512-token overlapping segments
+- US-204 — SQLite schema migration on startup
+- US-205 — Watch filesystem for changes
+- US-206 — First-run onboarding flow
+- US-207 — Folder list in Settings
+- US-208 — Index stats surface

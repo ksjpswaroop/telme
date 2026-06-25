@@ -6,7 +6,7 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Status
 
-✅ **Phase 0 — Scaffolding complete.** The Tauri 2 + React 19 + Rust app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 1 next.
+✅ **Phase 1 — Scaffolding complete.** The Tauri 2 + React 19 + Rust app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 2 next.
 
 See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 
