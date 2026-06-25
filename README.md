@@ -6,7 +6,9 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Status
 
-🚧 **Phase 0 — Scaffolding.** Design + planning complete; code not yet written.
+✅ **Phase 0 — Scaffolding complete.** The Tauri 2 + React 19 + Rust app boots on macOS, registers `⌘⇧Space` globally, and renders the title bar UI. No indexing or search yet — Phase 1 next.
+
+See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 
 ## Docs
 
@@ -27,13 +29,21 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Development
 
-(Will be filled in during Phase 0.)
-
 ```bash
-# Phase 0 setup (forthcoming)
+# Install deps
 pnpm install
-pnpm tauri dev
+
+# Run dev (HMR + Tauri shell)
+pnpm tauri:dev
+
+# Build debug binary (no installer)
+pnpm tauri build --no-bundle --debug
+
+# Build signed .app + .dmg
+pnpm tauri:build
 ```
+
+The Rust backend lives in `src-tauri/`. Run `cargo check` from there.
 
 ## License
 

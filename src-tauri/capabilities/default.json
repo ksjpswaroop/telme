@@ -1,0 +1,19 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Least-privilege local-first desktop app. v1 needs only window control, global shortcuts, and dialog (folder picker).",
+  "windows": ["titlebar"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:app:default",
+    "core:path:default",
+    "core:event:default",
+    "global-shortcut:default",
+    "dialog:default",
+    "dialog:allow-open"
+  ]
+}
