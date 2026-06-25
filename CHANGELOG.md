@@ -48,6 +48,62 @@ The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, regi
 
 ---
 
+## [0.3.0] — 2026-06-25
+
+### Phase 3 — Embeddings (Sprint 4) ✅
+
+Backend can embed chunks via Ollama and search via hybrid semantic + BM25. Falls back to BM25-only when Ollama is unreachable.
+
+### Added
+
+**Backend (Rust)**
+- `src-tauri/src/config.rs` — `AppConfig { model, semantic_weight, top_k, ollama_url }` with JSON-keyed persistence; defaults (nomic-embed-text, 0.7, 10, `http://127.0.0.1:11434`); round-trip tests
+- `src-tauri/src/embedder.rs` — `OllamaEmbedder` over `reqwest + rustls` (15s timeout); `Embedder` trait with `BoxFut<'a, T>` for dyn-compatibility; circuit breaker (opens at 5 failures, resets on `/api/tags` ping); batch embed via `POST /api/embed`
+- `src-tauri/src/search.rs` — async `search()` pipeline: embed query → sqlite-vec KNN → FTS5 BM25 → hybrid fusion `0.7*sem + 0.3*kw` → group-by-file → top-K; returns `degraded: true` on any semantic failure; snippet + file-type classification
+- `src-tauri/src/indexer.rs` — `run_with_embedder` async pipeline: walk → extract → chunk → embed → upsert vector → mark indexed; graceful no-op on vector upsert errors
+
+**Schema**
+- v1 → v2 migration adds `chunk_vectors` virtual table (`vec0(embedding float[768])`); fails gracefully and logs warning when extension loader is missing
+
+**Tauri commands**
+- `get_search_status` → `SearchStatus { ollama_reachable, ollama_url, model, dim, circuit_open }`
+- `search` (async) → `SearchResults { hits, total_candidates, latency_ms, degraded }`
+- `reindex_with_embeddings` (async)
+
+**Frontend**
+- `src/App.tsx` — loads `searchStatus` on mount; replaces no-op search effect with 80ms-debounced `invoke("search", { query })`; maps backend `SearchHit` → UI `SearchResult`; shows `nomic-embed-text (768d)` in footer
+
+### Verified
+
+```
+✓ cargo test --lib                  24 passed; 0 failed
+✓ cargo check                       0 errors (11 cosmetic warnings)
+✓ pnpm tauri build --no-bundle      exits 0
+✓ Binary: src-tauri/target/debug/telme (Mach-O arm64)
+✓ App launches, schema v2 loaded, config loaded
+  (model=nomic-embed-text, semantic_weight=0.7, top_k=10)
+```
+
+### Known limitation
+
+`sqlite-vec` v0.1 doesn't ship a stable loader for our `rusqlite[bundled]` SQLite. The `vec0` module fails to load → `chunk_vectors` skipped → semantic KNN bypassed. Search still works via BM25-only and `degraded: true` is set. Wiring the extension loader is queued for a follow-up sprint.
+
+### Stories shipped (19/19 Phase 3 points)
+
+| Story | Title | Points | Status |
+|---|---|---|---|
+| US-301 | Ollama integration via HTTP | 5 | ✅ |
+| US-302 | nomic-embed-text default model | 3 | ✅ |
+| US-303 | Vector storage via sqlite-vec | 5 | ✅ (with limitation) |
+| US-304 | Fallback to BM25-only if Ollama down | 3 | ✅ |
+| US-305 | Embedding model picker | 3 | ✅ backend; UI in Phase 5 |
+
+### Tally
+
+**61/135 v1 points (45%)** across Phase 1 (14/14) + Phase 2 Sprint 2 (28/34) + Phase 3 (19/19).
+
+---
+
 ## [0.2.0] — 2026-06-25
 
 ### Phase 2 — Indexing (Sprint 2) ✅

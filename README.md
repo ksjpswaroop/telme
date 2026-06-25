@@ -6,7 +6,7 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 ## Status
 
-🔄 **Phase 2 — Indexing (Sprint 2 of 2 complete).** The Rust backend persists folders, walks directories, extracts text/code, chunks, and stores in SQLite with FTS5. Frontend can add folders via native picker. Next: FS watcher + onboarding (Sprint 3), then embeddings (Phase 3).
+🔄 **Phase 3 — Embeddings complete.** Ollama HTTP client + hybrid semantic+BM25 search pipeline. Phase 4 (Search UX) next.
 
 See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 

@@ -1,9 +1,10 @@
-//! Telme backend (Phase 2).
+//! Telme backend (Phase 3).
 //!
 //! - Phase 1: global hotkey + title bar show/hide.
 //! - Phase 2: SQLite + folder management + walker + chunker + plain-text extractor.
+//! - Phase 3: Ollama embeddings + sqlite-vec KNN + hybrid search.
 //!
-//! Phase 3 will add Ollama embeddings, sqlite-vec, and the search command.
+//! Phase 5 will add the FS watcher; Phase 6 polish + Windows.
 
 use std::sync::Arc;
 
@@ -11,15 +12,19 @@ use tauri::{Manager, PhysicalPosition};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 mod chunker;
+mod config;
 mod db;
+mod embedder;
 mod error;
 mod extractor;
 mod folders;
 mod indexer;
 mod schema;
+mod search;
 mod walker;
 
-pub use error::{AppResult, TelmeError};
+use embedder::OllamaEmbedder;
+pub use error::{AppError, AppResult, TelmeError};
 
 /// Tracks whether the title bar is currently visible.
 static TITLEBAR_VISIBLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -114,6 +119,42 @@ fn db_path(db: tauri::State<'_, Arc<db::Db>>) -> String {
     db.path().to_string_lossy().into_owned()
 }
 
+// ---------- Phase 3 commands ----------
+
+#[tauri::command]
+fn get_search_status(
+    embedder: tauri::State<'_, Arc<OllamaEmbedder>>,
+) -> embedder::SearchStatus {
+    embedder.status()
+}
+
+#[tauri::command]
+async fn search(
+    db: tauri::State<'_, Arc<db::Db>>,
+    embedder: tauri::State<'_, Arc<OllamaEmbedder>>,
+    cfg: tauri::State<'_, Arc<parking_lot::Mutex<config::AppConfig>>>,
+    query: String,
+) -> Result<search::SearchResults, String> {
+    let cfg_guard = cfg.lock().clone();
+    let db_ref = db.inner().clone();
+    let emb_ref: Arc<dyn embedder::Embedder> = embedder.inner().clone();
+    search::search(&db_ref, emb_ref.as_ref(), &query, cfg_guard.top_k, cfg_guard.semantic_weight)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn reindex_with_embeddings(
+    db: tauri::State<'_, Arc<db::Db>>,
+    embedder: tauri::State<'_, Arc<OllamaEmbedder>>,
+) -> Result<indexer::IndexSummary, String> {
+    let db_ref = db.inner().clone();
+    let emb_ref: Arc<dyn embedder::Embedder> = embedder.inner().clone();
+    indexer::run_with_embedder(&db_ref, emb_ref)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 // ---------- App entry ----------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -157,6 +198,9 @@ pub fn run() {
             get_stats,
             reindex,
             db_path,
+            get_search_status,
+            search,
+            reindex_with_embeddings,
         ])
         .setup(move |app| {
             // ---- Phase 1: hotkey + window ----
@@ -182,7 +226,23 @@ pub fn run() {
             let db_path = db::default_db_path()?;
             tracing::info!(path = ?db_path, "opening index database");
             let db = db::Db::open(&db_path)?;
-            app.manage(Arc::new(db));
+            let db_arc = Arc::new(db);
+            app.manage(db_arc.clone());
+
+            // ---- Phase 3: load config + spin up embedder ----
+            let cfg = config::load(&db_arc).unwrap_or_default();
+            tracing::info!(
+                model = %cfg.model,
+                semantic_weight = cfg.semantic_weight,
+                top_k = cfg.top_k,
+                ollama = %cfg.ollama_url,
+                "loaded app config"
+            );
+            app.manage(Arc::new(parking_lot::Mutex::new(cfg.clone())));
+
+            let embedder = OllamaEmbedder::new(cfg)
+                .expect("failed to construct Ollama embedder");
+            app.manage(Arc::new(embedder));
 
             Ok(())
         })

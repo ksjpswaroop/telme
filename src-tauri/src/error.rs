@@ -3,7 +3,7 @@
 use serde::Serialize;
 
 #[derive(Debug, thiserror::Error)]
-pub enum TelmeError {
+pub enum AppError {
     #[error("sqlite: {0}")]
     Sqlite(#[from] rusqlite::Error),
 
@@ -26,10 +26,14 @@ pub enum TelmeError {
     Other(String),
 }
 
-impl Serialize for TelmeError {
+impl Serialize for AppError {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         ser.serialize_str(&self.to_string())
     }
 }
 
-pub type AppResult<T> = std::result::Result<T, TelmeError>;
+pub type AppResult<T> = std::result::Result<T, AppError>;
+
+// Back-compat alias (Phase 2 used this name).
+#[deprecated(note = "use AppError instead")]
+pub type TelmeError = AppError;

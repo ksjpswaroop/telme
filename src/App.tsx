@@ -14,6 +14,51 @@ interface IndexStats {
   bytes_indexed: number;
 }
 
+interface SearchHit {
+  chunk_id: number;
+  file_id: number;
+  path: string;
+  filename: string;
+  snippet: string;
+  score: number;
+  kind: "semantic" | "keyword" | "hybrid";
+  file_type: string;
+}
+
+interface SearchResponse {
+  hits: SearchHit[];
+  total_candidates: number;
+  latency_ms: number;
+  degraded: boolean;
+}
+
+function toUiResult(h: SearchHit): SearchResult {
+  return {
+    id: String(h.chunk_id),
+    filename: h.filename,
+    path: h.path,
+    snippet: h.snippet,
+    score: h.score,
+    kind: h.kind === "semantic" ? "semantic" : "keyword",
+    fileType:
+      h.file_type === "code"
+        ? "code"
+        : h.file_type === "pdf"
+        ? "pdf"
+        : h.file_type === "doc"
+        ? "doc"
+        : "other",
+  };
+}
+
+interface SearchStatus {
+  ollama_reachable: boolean;
+  ollama_url: string;
+  model: string;
+  dim: number;
+  circuit_open: boolean;
+}
+
 export default function App() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -25,6 +70,9 @@ export default function App() {
   const [folders, setFolders] = useState<string[]>([]);
   const [stats, setStats] = useState<IndexStats | null>(null);
   const [indexing, setIndexing] = useState(false);
+
+  // Phase 3: search status.
+  const [searchStatus, setSearchStatus] = useState<SearchStatus | null>(null);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -54,6 +102,9 @@ export default function App() {
     inputRef.current?.focus();
     loadFolders();
     refreshStats();
+    invoke<SearchStatus>("get_search_status")
+      .then(setSearchStatus)
+      .catch((e) => console.error("get_search_status failed:", e));
   }, [loadFolders, refreshStats]);
 
   // Re-focus after the title bar is re-shown via global hotkey
@@ -120,16 +171,36 @@ export default function App() {
     }
   };
 
-  // Phase 2: query → no results yet (search arrives in Phase 4).
+  // Phase 3: query -> debounced backend search via Tauri command.
   useEffect(() => {
-    if (query.trim().length === 0) {
+    const q = query.trim();
+    if (q.length === 0) {
       setResults([]);
       setLatencyMs(0);
       setDegraded(false);
       return;
     }
-    setResults([]);
-    setLatencyMs(0);
+
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      try {
+        const resp = await invoke<SearchResponse>("search", { query: q });
+        if (cancelled) return;
+        setResults(resp.hits.map(toUiResult));
+        setLatencyMs(resp.latency_ms);
+        setDegraded(resp.degraded);
+        setSelectedIndex(0);
+      } catch (e) {
+        if (cancelled) return;
+        console.error("search failed:", e);
+        setResults([]);
+      }
+    }, 80);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
   }, [query]);
 
   // Capture-phase listener on the input so Esc/Arrows work even though the
@@ -241,6 +312,12 @@ export default function App() {
             </span>
             <span className="font-mono">{stats.files.toLocaleString()} files</span>
             <span className="font-mono">{stats.chunks.toLocaleString()} chunks</span>
+            {searchStatus && (
+              <span className="font-mono">
+                {searchStatus.model} ({searchStatus.dim}d)
+                {searchStatus.circuit_open ? " ⚠" : ""}
+              </span>
+            )}
             <span className="ml-auto">
               <button
                 onClick={handleAddFolder}

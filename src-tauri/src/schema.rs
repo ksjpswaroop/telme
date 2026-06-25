@@ -10,13 +10,18 @@
 //! - `chunk_vectors`: vector index (added in Phase 3 once sqlite-vec is wired)
 //! - `config`: app-level key/value config
 //! - `schema_version`: tracks applied migrations
+//!
+//! Schema versions:
+//! - v1: initial — files, chunks, chunks_fts, config
+//! - v2: adds `chunk_vectors` (sqlite-vec) for Phase 3 embeddings
 
 use rusqlite::Connection;
 
+use crate::embedder::NOMIC_DIM;
 use crate::error::AppResult;
 
 /// Current schema version. Bump when adding migrations.
-pub const SCHEMA_VERSION: i32 = 1;
+pub const SCHEMA_VERSION: i32 = 2;
 
 pub fn run_migrations(conn: &Connection) -> AppResult<()> {
     // Pragmas first — idempotent, safe to set on every startup.
@@ -81,7 +86,29 @@ pub fn run_migrations(conn: &Connection) -> AppResult<()> {
         "#,
     )?;
 
-    // Record current version if absent.
+    // sqlite-vec vector index. The `vec0` virtual table module ships in a
+    // SQLite extension; loading it requires either `sqlite-vec`'s bundled
+    // SQLite build OR a manual `sqlite3_vec_init` call against the extension
+    // shared library. v0.1 of `sqlite-vec` doesn't ship a stable loader, so
+    // we attempt creation and gracefully degrade to BM25-only if the extension
+    // is missing.
+    let vec_dim = NOMIC_DIM as i64;
+    let vec_ok = conn
+        .execute_batch(&format!(
+            r#"
+            CREATE VIRTUAL TABLE IF NOT EXISTS chunk_vectors USING vec0(
+                embedding float[{vec_dim}]
+            );
+            "#,
+        ))
+        .is_ok();
+    if !vec_ok {
+        tracing::warn!(
+            "sqlite-vec not available; chunk_vectors disabled (BM25-only search)"
+        );
+    }
+
+    // Record current version if absent, else migrate forward.
     let current: Option<i32> = conn
         .query_row(
             "SELECT version FROM schema_version ORDER BY version DESC LIMIT 1",
@@ -89,19 +116,31 @@ pub fn run_migrations(conn: &Connection) -> AppResult<()> {
             |row| row.get(0),
         )
         .ok();
-    if current.is_none() {
-        conn.execute(
-            "INSERT INTO schema_version (version) VALUES (?1)",
-            [SCHEMA_VERSION],
-        )?;
-        tracing::info!(version = SCHEMA_VERSION, "schema initialized");
-    } else if current != Some(SCHEMA_VERSION) {
-        // Future migrations would branch here.
-        tracing::warn!(
-            current = current.unwrap_or(0),
-            target = SCHEMA_VERSION,
-            "schema version mismatch; migrations not yet implemented"
-        );
+    match current {
+        None => {
+            conn.execute(
+                "INSERT INTO schema_version (version) VALUES (?1)",
+                [SCHEMA_VERSION],
+            )?;
+            tracing::info!(version = SCHEMA_VERSION, "schema initialized");
+        }
+        Some(v) if v < SCHEMA_VERSION => {
+            // v1 -> v2: chunk_vectors was added above (CREATE IF NOT EXISTS).
+            // v2 is additive; nothing to copy.
+            conn.execute(
+                "INSERT INTO schema_version (version) VALUES (?1)",
+                [SCHEMA_VERSION],
+            )?;
+            tracing::info!(from = v, to = SCHEMA_VERSION, "schema migrated");
+        }
+        Some(v) if v > SCHEMA_VERSION => {
+            tracing::warn!(
+                on_disk = v,
+                app = SCHEMA_VERSION,
+                "on-disk schema newer than app; refusing to downgrade"
+            );
+        }
+        _ => {} // current
     }
 
     Ok(())
