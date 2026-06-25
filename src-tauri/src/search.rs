@@ -110,15 +110,15 @@ pub async fn search(
 // ---- KNN ----
 
 #[derive(Debug, Clone)]
-struct ScoredChunk {
-    chunk_id: i64,
-    file_id: i64,
-    path: String,
-    filename: String,
-    snippet: String,
-    raw_score: f32,
-    normalized: f32,
-    file_type: String,
+pub struct ScoredChunk {
+    pub chunk_id: i64,
+    pub file_id: i64,
+    pub path: String,
+    pub filename: String,
+    pub snippet: String,
+    pub raw_score: f32,
+    pub normalized: f32,
+    pub file_type: String,
 }
 
 fn knn_search(db: &Db, query_vec: &[f32], query_text: &str, limit: usize) -> AppResult<Vec<ScoredChunk>> {
@@ -271,7 +271,7 @@ fn fts_search(db: &Db, query: &str, limit: usize) -> AppResult<Vec<ScoredChunk>>
 
 // ---- Fusion ----
 
-fn fuse(
+pub fn fuse(
     semantic: Vec<ScoredChunk>,
     keyword: Vec<ScoredChunk>,
     w: f32,

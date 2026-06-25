@@ -10,6 +10,12 @@ Telme is a cross-platform desktop app (macOS + Windows) that lets you semantical
 
 See [CHANGELOG.md](./CHANGELOG.md) for delivery log.
 
+## For users
+
+- 👉 **[USER_GUIDE.md](./USER_GUIDE.md)** — install, first-run setup, daily use, troubleshooting on macOS
+- 📦 [Download Telme](https://github.com/ksjpswaroop/telme/releases) (latest release DMG)
+
+
 ## Docs
 
 - [PRD.md](./PRD.md) — Product requirements
