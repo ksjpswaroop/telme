@@ -35,6 +35,11 @@ pub async fn run_with_embedder(
         };
         summary.scanned += candidates.len();
 
+        // Prune files that no longer exist (catches deletes).
+        let pruned = folders::prune_missing(db, &folder).unwrap_or(0);
+        if pruned > 0 {
+            tracing::info!(folder = %folder_str, pruned, "pruned missing files");
+        }
         folders::upsert_pending(db, &candidates)?;
         let (idx, emb) = process_pending(db, embedder.as_ref(), &folder_str).await?;
         summary.indexed += idx;

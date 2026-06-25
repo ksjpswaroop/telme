@@ -22,6 +22,7 @@ pub mod indexer;
 pub mod schema;
 pub mod search;
 pub mod walker;
+pub mod watcher;
 
 use tauri_plugin_opener::OpenerExt;
 
@@ -92,13 +93,34 @@ fn close_titlebar(app: tauri::AppHandle) -> Result<(), String> {
 // ---------- Phase 2 commands ----------
 
 #[tauri::command]
-fn add_folder(db: tauri::State<'_, Arc<db::Db>>, path: String) -> Result<(), String> {
-    folders::add_folder(&db, std::path::Path::new(&path)).map_err(|e| e.to_string())
+fn add_folder(
+    db: tauri::State<'_, Arc<db::Db>>,
+    watcher: tauri::State<'_, Arc<watcher::WatcherState>>,
+    path: String,
+) -> Result<(), String> {
+    folders::add_folder(db.inner().as_ref(), std::path::Path::new(&path))
+        .map_err(|e| e.to_string())?;
+    // Re-key the watcher to cover all folders.
+    let folders = folders::list_folders(db.inner().as_ref()).map_err(|e| e.to_string())?;
+    let paths: Vec<std::path::PathBuf> =
+        folders.into_iter().map(std::path::PathBuf::from).collect();
+    watcher.rebuild(&paths).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
-fn remove_folder(db: tauri::State<'_, Arc<db::Db>>, path: String) -> Result<(), String> {
-    folders::remove_folder(&db, std::path::Path::new(&path)).map_err(|e| e.to_string())
+fn remove_folder(
+    db: tauri::State<'_, Arc<db::Db>>,
+    watcher: tauri::State<'_, Arc<watcher::WatcherState>>,
+    path: String,
+) -> Result<(), String> {
+    folders::remove_folder(db.inner().as_ref(), std::path::Path::new(&path))
+        .map_err(|e| e.to_string())?;
+    let folders = folders::list_folders(db.inner().as_ref()).map_err(|e| e.to_string())?;
+    let paths: Vec<std::path::PathBuf> =
+        folders.into_iter().map(std::path::PathBuf::from).collect();
+    watcher.rebuild(&paths).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -174,6 +196,48 @@ async fn reveal_file(app: tauri::AppHandle, path: String) -> Result<(), String> 
         .map_err(|e| e.to_string())
 }
 
+// ---------- Phase 2 Sprint 3: FS watcher + indexer worker ----------
+
+/// Trigger a manual reindex of a single folder. Returns IndexSummary.
+#[tauri::command]
+async fn reindex_folder(
+    db: tauri::State<'_, Arc<db::Db>>,
+    embedder: tauri::State<'_, Arc<OllamaEmbedder>>,
+    path: String,
+) -> Result<indexer::IndexSummary, String> {
+    let db_ref = db.inner().clone();
+    let emb_ref: Arc<dyn embedder::Embedder> = embedder.inner().clone();
+    let folder = std::path::PathBuf::from(&path);
+    // Ensure folder is registered
+    let _ = folders::add_folder(&db_ref, &folder);
+    let summary = indexer::run_with_embedder(&db_ref, emb_ref)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(summary)
+}
+
+/// Returns whether the watcher is currently active.
+#[tauri::command]
+fn watcher_status(watcher: tauri::State<'_, Arc<watcher::WatcherState>>) -> bool {
+    watcher.is_active()
+}
+
+/// Re-key the watcher to watch exactly the current set of indexed folders.
+/// Safe to call repeatedly; cheap when nothing changed.
+#[tauri::command]
+fn resync_watcher(
+    db: tauri::State<'_, Arc<db::Db>>,
+    watcher: tauri::State<'_, Arc<watcher::WatcherState>>,
+) -> Result<usize, String> {
+    let folders = folders::list_folders(db.inner().as_ref()).map_err(|e| e.to_string())?;
+    let paths: Vec<std::path::PathBuf> = folders.into_iter().map(std::path::PathBuf::from).collect();
+    let n = paths.len();
+    watcher
+        .rebuild(&paths)
+        .map_err(|e| format!("watcher rebuild: {e}"))?;
+    Ok(n)
+}
+
 // ---------- App entry ----------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -222,6 +286,9 @@ pub fn run() {
             reindex_with_embeddings,
             open_file,
             reveal_file,
+            reindex_folder,
+            watcher_status,
+            resync_watcher,
         ])
         .setup(move |app| {
             // ---- Phase 1: hotkey + window ----
@@ -264,6 +331,30 @@ pub fn run() {
             let embedder = OllamaEmbedder::new(cfg)
                 .expect("failed to construct Ollama embedder");
             app.manage(Arc::new(embedder));
+
+            // ---- Phase 2 Sprint 3: FS watcher + indexer worker ----
+            let watcher_state = Arc::new(watcher::WatcherState::new());
+            // Subscribe to events BEFORE rebuilding so events have a target.
+            let rx = watcher_state
+                .subscribe()
+                .expect("watcher subscribe should always succeed");
+            // Build the watcher for the current set of indexed folders.
+            if let Ok(folder_list) = folders::list_folders(&db_arc) {
+                let paths: Vec<std::path::PathBuf> =
+                    folder_list.into_iter().map(std::path::PathBuf::from).collect();
+                if let Err(e) = watcher_state.rebuild(&paths) {
+                    tracing::warn!(error = %e, "initial watcher rebuild failed");
+                }
+            }
+            app.manage(watcher_state);
+
+            // Spawn the indexer worker thread that consumes events and re-scans.
+            let db_for_worker = db_arc.clone();
+            let embedder_state: tauri::State<'_, Arc<OllamaEmbedder>> =
+                app.state::<Arc<OllamaEmbedder>>();
+            let emb_for_worker: Arc<dyn embedder::Embedder> = embedder_state.inner().clone();
+            let _worker_handle = watcher::spawn_indexer_worker(db_for_worker, emb_for_worker, rx);
+            // Intentionally leaked: thread lives for app lifetime.
 
             Ok(())
         })

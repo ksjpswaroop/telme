@@ -179,3 +179,45 @@ pub fn upsert_pending(db: &Db, candidates: &[crate::walker::Candidate]) -> AppRe
         Ok(count)
     })
 }
+
+/// Remove from the DB any indexed file under `folder` that no longer exists on
+/// disk. Cascades through `chunks` via the `ON DELETE CASCADE` foreign key.
+///
+/// Returns the count of removed rows. Called by the indexer after a fresh walk
+/// to keep the index in sync with FS deletions.
+pub fn prune_missing(db: &Db, folder: &Path) -> AppResult<usize> {
+    let folder_str = folder.to_string_lossy().into_owned();
+    let prefix = format!("{}/", folder_str);
+    db.with_conn(|conn| {
+        let tx = conn.unchecked_transaction()?;
+        let mut stmt = tx.prepare(
+            "SELECT id, path FROM files WHERE path = ?1 OR path LIKE ?2",
+        )?;
+        let rows: Vec<(i64, String)> = stmt
+            .query_map(params![folder_str, format!("{}%", prefix)], |r| {
+                Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?))
+            })?
+            .filter_map(|r| r.ok())
+            .collect();
+        drop(stmt);
+
+        let mut to_remove: Vec<i64> = Vec::new();
+        for (id, path) in &rows {
+            if !std::path::Path::new(path).exists() {
+                to_remove.push(*id);
+            }
+        }
+        let removed = if to_remove.is_empty() {
+            0
+        } else {
+            let placeholders: String = to_remove.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+            let sql = format!("DELETE FROM files WHERE id IN ({})", placeholders);
+            let mut del = tx.prepare(&sql)?;
+            let params_vec: Vec<&dyn rusqlite::ToSql> =
+                to_remove.iter().map(|i| i as &dyn rusqlite::ToSql).collect();
+            del.execute(params_vec.as_slice())?
+        };
+        tx.commit()?;
+        Ok(removed)
+    })
+}

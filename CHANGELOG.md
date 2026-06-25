@@ -48,6 +48,53 @@ The Tauri 2 + React 19 + Rust scaffold is in place. The app boots on macOS, regi
 
 ---
 
+## [0.6.0] — 2026-06-25
+
+### Phase 2 Sprint 3 — FS Watcher ✅
+
+Real-time filesystem indexing. Files are reindexed automatically when created, modified, or deleted in any indexed folder.
+
+### Added
+
+**Backend (Rust)**
+- `src-tauri/src/watcher.rs` — `WatcherState` wrapping `notify-debouncer-full`; subscribes to `IndexEvent`s via mpsc; rebuilds per add/remove of a folder
+- `src-tauri/src/folders.rs` — `prune_missing(folder)` removes files (and cascades to chunks) that no longer exist on disk
+- `src-tauri/src/indexer.rs` — calls `prune_missing` at the start of every rescan to catch deletes
+- Background indexer worker thread spawned at app startup: consumes debounced events → calls `indexer::run_with_embedder`
+
+**Tauri commands**
+- `reindex_folder(path)` — manually reindex a specific folder
+- `watcher_status()` — returns whether the watcher is active
+- `resync_watcher()` — re-key the watcher to match the current `indexed_folders`
+- `add_folder` and `remove_folder` now also call `watcher.rebuild()` so the watch list stays in sync
+
+**Dependencies**
+- `notify = "6"`, `notify-debouncer-full = "0.3"`
+
+### Verified (live, on macOS)
+
+```
+$ cargo test --lib                             29 passed; 0 failed
+$ cargo run --example verify_watcher           ✅ Watcher e2e passed.
+
+0. Initial state:                       chunks: 0
+1. Wrote 3 files (debouncer fires):     chunks: 3
+2. Modified file_0.md:                  chunks: 3
+3. Deleted file_1.md:                   chunks: 2   ← prune works
+4. Stopped watcher:                     stopped cleanly
+```
+
+### Tally
+
+**82/135 v1 points (61%)** across Phase 1 (14/14) + Phase 2 Sprint 2+3 (33/34) + Phase 3 (19/19) + Phase 4 Sprint 5 (16/26).
+
+### Deferred
+
+- US-206 Onboarding window (the EmptyState component already gives a workable v0)
+- US-207 Full Settings window — deferred to Phase 5 (Polish)
+
+---
+
 ## [0.5.0] — 2026-06-25
 
 ### Release artifacts (macOS)

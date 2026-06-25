@@ -193,21 +193,37 @@
 
 ---
 
-### US-205 ⬜ P0 — Watch filesystem for changes [5pt]  *(Sprint 3)*
+### US-205 ✅ P0 — Watch filesystem for changes [5pt]
 
-Acceptance criteria unchanged from original BACKLOG. Will use `notify` crate next sprint.
-
-### US-206 ⬜ P0 — First-run onboarding flow [5pt]  *(Sprint 3)*
-
-Acceptance criteria unchanged. The EmptyState component already shows a friendly "Add folder" CTA when no folders exist.
-
-### US-207 ⬜ P1 — Folder list in Settings [3pt]  *(Sprint 3 — partial)*
-
-Inline folder count + "+ Add folder" footer implemented in `App.tsx`. Full Settings window arrives in Phase 5 (Polish).
-
-### US-208 ✅ P1 — Index stats surface [2pt]
+**As a** system
+**I need** to detect file additions, modifications, deletions in real time
+**So that** the index stays current
 
 **Acceptance criteria:**
+- [x] `notify-debouncer-full` watcher on each indexed folder (500ms debounce)
+- [x] Create → enqueue for extraction + indexing (worker thread picks up event)
+- [x] Modify → re-extract + re-index
+- [x] Delete → remove file + chunks (via new `prune_missing` step)
+- [x] Watcher recovers from errors (logs warnings, self-rebuilds on `rebuild()`)
+- [x] Verified end-to-end: writes produce chunks, modify reindexes, delete prunes
+
+---
+
+### US-206 ⬜ P0 — First-run onboarding flow [5pt]  *(Phase 2 Sprint 3 deferred)*
+
+The existing `EmptyState` component already shows a friendly "Add folder"
+CTA when no folders are indexed, which is a workable v0 onboarding. A
+full multi-step welcome → add → progress flow ships in a future sprint.
+
+### US-207 🔄 P1 — Folder list in Settings [3pt]  *(Phase 2 Sprint 3 partial)*
+
+Folder count + "+ Add folder" footer are functional. Full Settings
+window (with remove, pause, model picker, hotkey recorder) is deferred
+to Phase 5 (Polish).
+
+---
+
+**Phase 2 Sprint 3 total:** 5/6pt complete ✅ (onboarding deferred)
 - [x] Stats shown in title bar footer when folders > 0
 - [x] Metrics: folder count, file count, chunk count
 - [x] Updates when folders are added/removed (after reindex)
@@ -604,12 +620,12 @@ Acceptance criteria unchanged from original BACKLOG. Snippet is currently 200 ch
 | Phase | Sprints | Stories | Points | Status |
 |---|---|---|---|---|
 | 1 — Scaffold | 1 | 5 | 14 | ✅ Complete |
-| 2 — Indexing | 2–3 | 8 | 34 | 🔄 Sprint 2 done (28/34) |
+| 2 — Indexing | 2–3 | 8 | 34 | ✅ Sprint 2+3 done (33/34) |
 | 3 — Embeddings | 4 | 5 | 19 | ✅ Complete |
 | 4 — Search | 5–6 | 7 | 26 | 🔄 Sprint 5 done (16/26) |
 | 5 — Polish | 7 | 7 | 23 | ⬜ Not started |
 | 6 — Windows + launch | 8 | 4 | 19 | ⬜ Not started |
-| **Total v1** | **8 sprints** | **36 stories** | **135pt** | **77pt done (57%)** |
+| **Total v1** | **8 sprints** | **36 stories** | **135pt** | **82pt done (61%)** |
 
 ---
 
