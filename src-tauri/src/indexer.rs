@@ -36,7 +36,9 @@ pub async fn run_with_embedder(
         summary.scanned += candidates.len();
 
         folders::upsert_pending(db, &candidates)?;
-        summary.indexed += process_pending(db, embedder.as_ref(), &folder_str).await?;
+        let (idx, emb) = process_pending(db, embedder.as_ref(), &folder_str).await?;
+        summary.indexed += idx;
+        summary.embedded += emb;
     }
 
     Ok(summary)
@@ -55,7 +57,7 @@ async fn process_pending(
     db: &Db,
     embedder: &dyn Embedder,
     folder_str: &str,
-) -> AppResult<usize> {
+) -> AppResult<(usize, usize)> {
     use rusqlite::params;
 
     let prefix = format!("{}/", folder_str);
@@ -75,6 +77,7 @@ async fn process_pending(
     })?;
 
     let mut newly_indexed = 0;
+    let mut newly_embedded = 0;
 
     for (file_id, path_str, _mtime) in to_process {
         let path = std::path::PathBuf::from(&path_str);
@@ -104,8 +107,8 @@ async fn process_pending(
             match embedder.embed_batch(&text_refs).await {
                 Ok(vectors) => {
                     for (cid, vec) in chunk_ids.iter().zip(vectors.into_iter()) {
-                        if let Err(e) = upsert_vector(db, *cid, &vec) {
-                            tracing::warn!(chunk_id = cid, error = %e, "vector upsert failed");
+                        if upsert_vector(db, *cid, &vec).is_ok() {
+                            newly_embedded += 1;
                         }
                     }
                 }
@@ -116,7 +119,7 @@ async fn process_pending(
         }
     }
 
-    Ok(newly_indexed)
+    Ok((newly_indexed, newly_embedded))
 }
 
 fn mark_status(db: &Db, file_id: i64, status: &str) -> AppResult<()> {

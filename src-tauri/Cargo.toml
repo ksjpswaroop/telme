@@ -41,6 +41,9 @@ async-channel = "2"
 sqlite-vec = "0.1"
 url = "2"
 
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+
 [profile.release]
 panic = "abort"
 codegen-units = 1

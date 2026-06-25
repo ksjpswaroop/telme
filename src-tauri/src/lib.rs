@@ -11,17 +11,17 @@ use std::sync::Arc;
 use tauri::{Manager, PhysicalPosition};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
-mod chunker;
-mod config;
-mod db;
-mod embedder;
-mod error;
-mod extractor;
-mod folders;
-mod indexer;
-mod schema;
-mod search;
-mod walker;
+pub mod chunker;
+pub mod config;
+pub mod db;
+pub mod embedder;
+pub mod error;
+pub mod extractor;
+pub mod folders;
+pub mod indexer;
+pub mod schema;
+pub mod search;
+pub mod walker;
 
 use tauri_plugin_opener::OpenerExt;
 
