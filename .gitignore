@@ -1,0 +1,53 @@
+# Build outputs
+/dist/
+/build/
+/target/
+*.app
+*.dmg
+*.exe
+*.msi
+*.deb
+*.AppImage
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Node
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editor
+.vscode/
+.idea/
+*.iml
+.cursor/
+
+# Telme-specific runtime data (NOT in repo)
+/index.db
+/index.db-*
+/models/*.gguf
+/logs/
+/tmp/
+
+# Coverage / test artifacts
+coverage/
+*.lcov
+.nyc_output/
+
+# OS file locks
+.lock
+*.pid
